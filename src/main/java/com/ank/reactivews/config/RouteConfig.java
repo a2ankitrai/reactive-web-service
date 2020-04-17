@@ -1,4 +1,4 @@
-package com.ank.reactivews;
+package com.ank.reactivews.config;
 
 import com.ank.reactivews.model.Person;
 import com.ank.reactivews.repository.PersonRepository;
@@ -11,12 +11,9 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 @Configuration
-public class Config {
-
-
+public class RouteConfig {
     @Bean
     RouterFunction<ServerResponse> routes(PersonRepository personRepository){
-
         return route()
                 .GET("/persons", serverRequest -> ok().body(personRepository.findAll(), Person.class))
                 .build();

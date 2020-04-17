@@ -1,2 +1,5 @@
 # reactive-web-service
-Reactive WebService using Spring WebFlux
+Reactive WebService using Spring WebFlux 
+
+- Data store : Mongo
+
