@@ -3,6 +3,7 @@ package com.ank.reactivews.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -18,20 +19,22 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Configuration
+@Slf4j
 public class WebSocketConfig {
 
     @Bean
     SimpleUrlHandlerMapping simpleUrlHandlerMapping(WebSocketHandler webSocketHandler){
-        return new SimpleUrlHandlerMapping(){
-            @Override
-            public void setUrlMap(Map<String, ?> urlMap) {
-                super.setUrlMap(Map.of("/ws/socketHello", webSocketHandler));
-            }
-            @Override
-            public void setOrder(int order) {
-                super.setOrder(10);
-            }
-        };
+        return new SimpleUrlHandlerMapping(Map.of("/ws/socketHello", webSocketHandler),10);
+//        return new SimpleUrlHandlerMapping(){
+//            @Override
+//            public void setUrlMap(Map<String, ?> urlMap) {
+//                super.setUrlMap(Map.of("/ws/socketHello", webSocketHandler));
+//            }
+//            @Override
+//            public void setOrder(int order) {
+//                super.setOrder(10);
+//            }
+//        };
     }
 
     @Bean
@@ -47,7 +50,13 @@ public class WebSocketConfig {
                     .map(HelloRequest::new)
                     .flatMap(producer::hello)
                     .map(HelloResponse::getMessage)
-                    .map(webSocketSession::textMessage);
+                    .map(webSocketSession::textMessage)
+                   .doOnEach(webSocketMessageSignal -> {
+                       // this will log message on each processing of the websocket on client side
+                           log.info(String.valueOf(webSocketMessageSignal.getType())) ;
+                   })
+                   // this will log message when client terminates the ws connection
+                   .doFinally(signalType -> log.info("Finally: "+signalType));
 
            return webSocketSession.send(messageFlux);
         };
@@ -78,5 +87,6 @@ class HelloProducer{
                         () -> new HelloResponse("Namaskaram " + request.getName() + " @ " + Instant.now())
                 ))
                 .delayElements(Duration.ofSeconds(1));
+                // .take(5); // if we want to limit the number of elements
     }
 }
