@@ -2,9 +2,9 @@
 <body>
 <script>
     window.addEventListener('load', function (e) {
-        var ws = new WebSocket('ws://localhost:8080/ws/socketHello')
+        const ws = new WebSocket('ws://localhost:9000/ws/socketHello');
         ws.addEventListener('open',function () {
-            var nameToHello = window.prompt("Who Should we say Hello?")
+            const nameToHello = window.prompt("Who Should we say Hello?");
             ws.send(nameToHello)
         })
         ws.addEventListener('message', function(msg){

@@ -1,8 +1,7 @@
 package com.ank.reactivews.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.ank.reactivews.model.HelloRequest;
+import com.ank.reactivews.model.HelloResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +11,7 @@ import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -48,7 +48,7 @@ public class WebSocketConfig {
            Flux<WebSocketMessage> messageFlux =  webSocketSession.receive()
                     .map(WebSocketMessage::getPayloadAsText)
                     .map(HelloRequest::new)
-                    .flatMap(producer::hello)
+                    .flatMap(producer::helloResponseFlux)
                     .map(HelloResponse::getMessage)
                     .map(webSocketSession::textMessage)
                    .doOnEach(webSocketMessageSignal -> {
@@ -65,28 +65,22 @@ public class WebSocketConfig {
 
 }
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-class HelloResponse{
-    private String message;
-}
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-class HelloRequest{
-    private String name;
-}
-
 @Component
 class HelloProducer{
-    Flux<HelloResponse> hello(HelloRequest request){
+    Flux<HelloResponse> helloResponseFlux(HelloRequest request){
         return Flux.fromStream(
                 Stream.generate(
-                        () -> new HelloResponse("Namaskaram " + request.getName() + " @ " + Instant.now())
+                        () -> sayHello(request.getName())
                 ))
                 .delayElements(Duration.ofSeconds(1));
                 // .take(5); // if we want to limit the number of elements
+    }
+
+    Mono<HelloResponse> helloResponseMono(HelloRequest request){
+        return Mono.just(sayHello(request.getName()));
+    }
+
+    private HelloResponse sayHello(String name){
+        return new HelloResponse("Namaskaram " + name + " @ " + Instant.now());
     }
 }

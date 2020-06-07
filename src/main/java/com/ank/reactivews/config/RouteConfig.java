@@ -1,5 +1,7 @@
 package com.ank.reactivews.config;
 
+import com.ank.reactivews.model.HelloRequest;
+import com.ank.reactivews.model.HelloResponse;
 import com.ank.reactivews.model.Person;
 import com.ank.reactivews.repository.PersonRepository;
 import org.springframework.context.annotation.Bean;
@@ -17,10 +19,15 @@ public class RouteConfig {
     RouterFunction<ServerResponse> routes(PersonRepository personRepository, HelloProducer helloProducer){
         return route()
                 .GET("/persons", serverRequest -> ok().body(personRepository.findAll(), Person.class))
-                .GET("person/{name}", r -> ok()
+
+                .GET("/greeting/{name}", r -> ok()
+                        .body(helloProducer
+                                .helloResponseMono(new HelloRequest(r.pathVariable("name"))), HelloResponse.class))
+
+                .GET("/greetings/{name}", r -> ok()
                         .contentType(MediaType.TEXT_EVENT_STREAM)
                         .body(helloProducer
-                                .hello(new HelloRequest(r.pathVariable("name"))), HelloResponse.class))
+                                .helloResponseFlux(new HelloRequest(r.pathVariable("name"))), HelloResponse.class))
                 .build();
     }
 }

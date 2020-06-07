@@ -26,7 +26,7 @@ public class SampleDataInitializer {
       this.personRepository.deleteAll()
               .thenMany(just)
               .thenMany(this.personRepository.findAll())
-              .subscribe(log::info  );
+              .subscribe(log::info);
     }
 
 }
